@@ -14,25 +14,26 @@ async function checkLogin() {
   const data = await response.json();
   if (data.loggedin) {
     console.log(true);
-    updateButtonsToLoggedIn();
-    return true
+
+    updateButtonsToLoggedIn(data.user.name);
+
   } else {
     console.log(false);
-    return false
+
   }
 }
 
-function updateButtonsToLoggedIn() {
+function updateButtonsToLoggedIn(name) {
   // Update sidebar login button
   if (login1) {
-    login1.innerHTML = '<i class="fa-solid fa-user-check" style="margin-right: 5px;"></i>Logged In';
+    login1.innerHTML = `<i class="fa-solid fa-user-check" style="margin-right: 5px;"></i>${name}`;
     login1.classList.add("logged-in");
     login1.onclick = null; // Remove login redirect function
   }
 
   // Update navbar login button
   if (login2) {
-    login2.innerHTML = '<i class="fa-solid fa-user-check" style="margin-right: 5px;"></i>Logged In';
+    login2.innerHTML = `<i class="fa-solid fa-user-check" style="margin-right: 5px;"></i>${name}`;
     login2.classList.add("logged-in");
     login2.onclick = null; // Remove login redirect function
   }

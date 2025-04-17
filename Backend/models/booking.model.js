@@ -7,6 +7,10 @@ const bookingSchema = new mongoose.Schema({
     location: String,
     email: String,
     service: String,
+    notes: {
+        type: String,
+        default: "no",
+    },
     createdAt: {
         type: Date,
         default: Date.now,

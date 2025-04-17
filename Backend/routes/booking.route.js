@@ -5,7 +5,7 @@ import { isAuth, isAdmin } from '../controllers/auth.controller.js'
 
 const router = express.Router();
 
-router.post('/booking', create)
+router.post('/booking', isAuth, create)
 router.get("/", isAdmin, get)
 
 export default router;
