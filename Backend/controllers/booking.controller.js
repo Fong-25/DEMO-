@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 
 export const create = async (req, res) => {
     try {
-        const { service } = req.body;
+        const { service, notes } = req.body;
         const token = req.cookies.token;
         if (!token) {
             return res.status(401).json({ message: "Unauthorized" })
@@ -43,34 +43,36 @@ export const create = async (req, res) => {
             gender: user.gender,
             location: user.location,
             email: user.email,
-            service: service
+            service: service,
+            notes: notes || "no"
         })
         if (!booking) {
             return res.status(500).json({ message: "Internal server error" })
         }
         // console.log(booking)
         // send email to admin email
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: process.env.EMAIL_USER,
-            subject: 'New Booking!',
-            text: `A new user submitted a new booking!
-            - Name: ${user.name}
-            - Age: ${user.age}
-            - Gender: ${user.gender}
-            - Location: ${user.location}
-            - Email: ${user.email}
-            - Service: ${service}
-            - Created at: ${booking.createdAt}`
-        }
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Error sending email:', error);
-                return res.status(500).send('Error sending email: ' + error.message);
-            }
-            console.log('Email sent:', info.response);
-            // res.status(200).send('Data saved successfully and email sent!');
-        })
+        // const mailOptions = {
+        //     from: process.env.EMAIL_USER,
+        //     to: process.env.EMAIL_USER,
+        //     subject: 'New Booking!',
+        //     text: `A new user submitted a new booking!
+        //     - Name: ${user.name}
+        //     - Age: ${user.age}
+        //     - Gender: ${user.gender}
+        //     - Location: ${user.location}
+        //     - Email: ${user.email}
+        //     - Service: ${service}
+        //     - Notes: ${notes}
+        //     - Created at: ${booking.createdAt}`
+        // }
+        // transporter.sendMail(mailOptions, (error, info) => {
+        //     if (error) {
+        //         console.error('Error sending email:', error);
+        //         return res.status(500).send('Error sending email: ' + error.message);
+        //     }
+        //     console.log('Email sent:', info.response);
+        //     // res.status(200).send('Data saved successfully and email sent!');
+        // })
         res.status(201).json({ message: "Booking created successfully, sent email to admin.", booking })
     } catch (error) {
         console.error(error)
