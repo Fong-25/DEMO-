@@ -1,13 +1,22 @@
-const path = require('path');
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const nodemailer = require('nodemailer'); // Import Nodemailer
-require('dotenv').config(); // Load environment variables from .env file
+import path from 'path';
+import express from 'express';
+import mongoose from 'mongoose'
+import cors from 'cors'
+import nodemailer from 'nodemailer' // Import Nodemailer
+import authRoutes from './routes/auth.route.js';
+import bookingRoutes from './routes/booking.route.js';
+import reviewRoutes from './routes/review.route.js'
+import dotenv from 'dotenv' // Load environment variables from .env file
+import cookieParser from "cookie-parser";
+
+dotenv.config()
 // updated code
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-
+// Get the current directory name
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const app = express();
 
 app.use(cors({
@@ -16,7 +25,8 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "../Frontend")));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); // Middleware to parse cookies
 
 
 // Connect to MongoDB
@@ -25,125 +35,73 @@ mongoose
     .then(() => console.log("Connected to MongoDB"))
     .catch((err) => console.error("MongoDB connection error:", err));
 
-// Define a schema and model
-const userSchema = new mongoose.Schema({
-    username: String,
-    age: Number,
-    gender: String,
-    email: String,
-    location: String,
-});
+// const reviewSchema = new mongoose.Schema({
+//     reviewText: String,
+//     reviewAuthor: String,
+// })
 
-const reviewSchema = new mongoose.Schema({
-    reviewText: String,
-    reviewAuthor: String,
-})
+// const Review = mongoose.model('Review', reviewSchema)
 
-const User = mongoose.model('User', userSchema);
-const Review = mongoose.model('Review', reviewSchema)
 
-// Configure Nodemailer
-const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use your email service (e.g., Gmail, Outlook)
-    auth: {
-        user: process.env.EMAIL_USER, // Replace with your email
-        pass: process.env.EMAIL_PASS, // Replace with your email password or app password
-    },
-});
+app.use('/api/auth', authRoutes); // use auth routes
+app.use('/api/booking', bookingRoutes); // use booking routes
+app.use('/api/review', reviewRoutes); // use review routes
 
 // Default route
+app.use(express.static(path.join(__dirname, "../Frontend")));
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "../Frontend/index.html"));
 });
 
-// Handle form submission
-app.post('/submit', async (req, res) => {
-    try {
-        const { username, age, gender, email, location } = req.body;
+// // Handle review submission
+// app.post('/submit-review', async (req, res) => {
+//     try {
+//         const { reviewText, reviewAuthor } = req.body;
 
-        // Save data to MongoDB
-        const newUser = new User({ username, age, gender, email, location });
-        await newUser.save();
+//         if (!reviewText || !reviewAuthor) {
+//             return res.status(400).send('Review text and author are required');
+//         }
 
-        // Send email notification
-        const mailOptions = {
-            from: process.env.EMAIL_USER, // Replace with your email
-            to: process.env.EMAIL_USER, // Replace with the recipient email
-            subject: 'New Form Submission',
-            text: `A new form submission has been received:
-            - Name: ${username}
-            - Age: ${age}
-            - Gender: ${gender}
-            - Email: ${email}
-            - Location: ${location}`,
-        };
+//         console.log('Received review:', { reviewText, reviewAuthor });
+//         const newReview = new Review({ reviewText, reviewAuthor });
+//         newReview.save()
+//         // Configure email options
+//         const mailOptions = {
+//             from: process.env.EMAIL_USER, // Replace with your email
+//             to: process.env.EMAIL_USER, // Replace with the recipient email
+//             subject: 'New Review Submitted',
+//             text: `A new review has been submitted:
+//             - Review: "${reviewText}"
+//             - Author: ${reviewAuthor}`,
+//         };
 
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Error sending email:', error);
-                return res.status(500).send('Error sending email: ' + error.message);
-            }
-            console.log('Email sent:', info.response);
-            res.status(200).send('Data saved successfully and email sent!');
-        });
+//         // Send email
+//         transporter.sendMail(mailOptions, (error, info) => {
+//             if (error) {
+//                 console.error('Error sending email:', error);
+//                 return res.status(500).send('Error sending email: ' + error.message);
+//             }
+//             console.log('Email sent:', info.response);
+//             res.status(200).send('Review submitted and email sent successfully!');
+//         });
 
-        res.status(200).send('Data saved successfully and email sent!');
-    } catch (err) {
-        console.error('Error saving data:', err);
-        console.log(err)
-        res.status(500).send('Error saving data');
-    }
-});
+//         res.status(200).send("Review submitted and email sent.")
+//     } catch (err) {
+//         console.error('Error handling review submission:', err);
+//         res.status(500).send('Error handling review submission');
+//     }
+// });
 
-// Handle review submission
-app.post('/submit-review', async (req, res) => {
-    try {
-        const { reviewText, reviewAuthor } = req.body;
-
-        if (!reviewText || !reviewAuthor) {
-            return res.status(400).send('Review text and author are required');
-        }
-
-        console.log('Received review:', { reviewText, reviewAuthor });
-        const newReview = new Review({ reviewText, reviewAuthor });
-        newReview.save()
-        // Configure email options
-        const mailOptions = {
-            from: process.env.EMAIL_USER, // Replace with your email
-            to: process.env.EMAIL_USER, // Replace with the recipient email
-            subject: 'New Review Submitted',
-            text: `A new review has been submitted:
-            - Review: "${reviewText}"
-            - Author: ${reviewAuthor}`,
-        };
-
-        // Send email
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Error sending email:', error);
-                return res.status(500).send('Error sending email: ' + error.message);
-            }
-            console.log('Email sent:', info.response);
-            res.status(200).send('Review submitted and email sent successfully!');
-        });
-
-        res.status(200).send("Review submitted and email sent.")
-    } catch (err) {
-        console.error('Error handling review submission:', err);
-        res.status(500).send('Error handling review submission');
-    }
-});
-
-app.get('/reviews', async (req, res) => {
-    try {
-        const reviews = await Review.find();
-        res.status(200).json(reviews)
-    } catch (error) {
-        console.error('Error fetching reviews:', error);
-        res.status(500).send('Error fetching reviews');
-        console.log(error)
-    }
-})
+// app.get('/reviews', async (req, res) => {
+//     try {
+//         const reviews = await Review.find();
+//         res.status(200).json(reviews)
+//     } catch (error) {
+//         console.error('Error fetching reviews:', error);
+//         res.status(500).send('Error fetching reviews');
+//         console.log(error)
+//     }
+// })
 
 //Start the server
 

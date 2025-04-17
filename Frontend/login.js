@@ -1,4 +1,6 @@
-// Show Sign-Up Form
+
+
+// http://localhost:3000
 function showSignUp() {
     document.getElementById("loginForm").style.display = "none";
     document.getElementById("signUpForm").style.display = "block";
@@ -21,7 +23,7 @@ document.getElementById("signup").addEventListener("submit", async (e) => {
     const password = document.getElementById("password").value;
 
     try {
-        const response = await fetch("https://enlightened-sage-ltd.onrender.com/signup", {
+        const response = await fetch("http://localhost:3000/api/auth/signup", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -30,7 +32,7 @@ document.getElementById("signup").addEventListener("submit", async (e) => {
         });
 
         if (response.ok) {
-            alert("Sign-Up Successful!");
+            alert("Sign-Up Successful! Log in to continue.");
             showLogin();
         } else {
             alert("Sign-Up Failed!");
@@ -48,7 +50,7 @@ document.getElementById("login").addEventListener("submit", async (e) => {
     const password = document.getElementById("loginPassword").value;
 
     try {
-        const response = await fetch("https://enlightened-sage-ltd.onrender.com/login", {
+        const response = await fetch("http://localhost:3000/api/auth/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -58,6 +60,8 @@ document.getElementById("login").addEventListener("submit", async (e) => {
 
         if (response.ok) {
             alert("Login Successful!");
+            window.location.href = "http://localhost:3000/index.html"; // Redirect to home
+
         } else {
             alert("Login Failed!");
         }
