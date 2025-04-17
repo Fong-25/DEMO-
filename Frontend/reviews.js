@@ -5,9 +5,9 @@ document.getElementById("reviewBtn").addEventListener("click", () => {
 
 async function addReview() {
     const reviewText = document.getElementById("reviewText").value;
-    const reviewAuthor = document.getElementById("reviewAuthor").value;
+    // const reviewAuthor = document.getElementById("reviewAuthor").value;
 
-    if (reviewText && reviewAuthor) {
+    if (reviewText) {
         // const newReview = document.createElement("div");
         // newReview.classList.add("review-card");
         // newReview.innerHTML = `<p>"${reviewText}"</p><span>- ${reviewAuthor}</span>`;
@@ -16,19 +16,19 @@ async function addReview() {
 
         // Clear form fields
         document.getElementById("reviewText").value = "";
-        document.getElementById("reviewAuthor").value = "";
+        // document.getElementById("reviewAuthor").value = "";
 
         // Hide the form
         document.getElementById("reviewForm").style.display = "none";
 
         // Send review details to the backend for email notification
         try {
-            const response = await fetch('https://enlightened-sage-ltd.onrender.com/submit-review', { // Add the full backend URL
+            const response = await fetch('http://localhost:3000/api/review/submit', { // Add the full backend URL
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ reviewText, reviewAuthor }),
+                body: JSON.stringify({ reviewText }),
             });
 
             if (response.ok) {
@@ -53,7 +53,7 @@ document.getElementById("reviewForm").style.display = "none";
 
 async function fetchReviews() {
     try {
-        const response = await fetch(`https://enlightened-sage-ltd.onrender.com/reviews`, {
+        const response = await fetch(`http://localhost:3000/api/review`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -64,7 +64,8 @@ async function fetchReviews() {
         const container = document.getElementById("reviews-container")
 
         container.innerHTML = ""; // clear existing reviews, not optional
-        data.forEach((review) => {
+        const reviews = data.reviews
+        reviews.forEach((review) => {
             const reviewCard = document.createElement("div");
             reviewCard.classList.add("review-card");
 
